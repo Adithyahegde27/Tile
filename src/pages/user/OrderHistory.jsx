@@ -309,25 +309,12 @@ const OrderHistory = () => {
                               <span className="font-medium text-blue-600">{formatDate(order.deliveryDate)}</span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-slate-500">Payment Method:</span>
+                              <span className="text-slate-500"> Payment Method:</span>
                               <span className="font-medium text-slate-700 capitalize">{order.paymentMethod || "Cash on Delivery"}</span>
                             </div>
                           </div>
                         </div>
                       </div>
-
-                      {/* Cancel Button - Only show for non-delivered and non-cancelled orders */}
-                      {order.status !== "Delivered" && order.status !== "Cancelled" && (
-                        <div className="mt-6 pt-4 border-t border-slate-200 flex justify-end">
-                          <button
-                            onClick={() => handleCancelOrder(order._id)}
-                            className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
-                          >
-                            <FaTimesCircle />
-                            Cancel Order
-                          </button>
-                        </div>
-                      )}
                     </div>
                   )}
                 </div>

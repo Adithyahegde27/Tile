@@ -99,8 +99,8 @@ const Dashboard = () => {
   ];
 
   const quickActions = [
-    { title: "Browse Categories", icon: <FaTags />, link: "/category", color: "from-purple-500 to-purple-600", shadow: "shadow-purple-500/30" },
-    { title: "My Orders", icon: <FaShoppingCart />, link: "/order", color: "from-yellow-500 to-yellow-600", shadow: "shadow-yellow-500/30" },
+    { title: "Browse Wishlist", icon: <FaTags />, link: "/wishlist", color: "from-purple-500 to-purple-600", shadow: "shadow-purple-500/30" },
+    { title: "My Orders", icon: <FaShoppingCart />, link: "/myorders", color: "from-yellow-500 to-yellow-600", shadow: "shadow-yellow-500/30" },
     { title: "Track Orders", icon: <FaMapMarkerAlt />, link: "/track", color: "from-blue-500 to-blue-600", shadow: "shadow-blue-500/30" },
     { title: "Give Feedback", icon: <FaCommentAlt />, link: "/feedback", color: "from-green-500 to-green-600", shadow: "shadow-green-500/30" },
   ];
@@ -313,4 +313,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-

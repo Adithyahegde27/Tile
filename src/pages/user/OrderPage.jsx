@@ -1,14 +1,17 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../../services/api";
-import { FaShoppingCart, FaTruck, FaCheck, FaMapMarkerAlt, FaCreditCard, FaMoneyBillWave, FaCalendarAlt, FaClock, FaUndo, FaHome } from "react-icons/fa";
+import { FaShoppingCart, FaTruck, FaCheck, FaMapMarkerAlt, FaCreditCard, FaMoneyBillWave, FaCalendarAlt, FaClock, FaUndo, FaHome, FaBolt, FaExclamationTriangle } from "react-icons/fa";
 
 const OrderPage = () => {
   const navigate = useNavigate();
   const [cartItems, setCartItems] = useState([]);
-  let userId = localStorage.getItem("userId");
+  const [orderType, setOrderType] = useState(null); // 'direct' or 'cart'
+  const [userId, setUserId] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [message, setMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [orderLoading, setOrderLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [step, setStep] = useState(1);
 
@@ -21,42 +24,70 @@ const OrderPage = () => {
     paymentMethod: "cash"
   });
 
-  // Order details from backend
+  // Order details from backend - store totalAmount separately
   const [orderDetails, setOrderDetails] = useState(null);
+  const [savedTotal, setSavedTotal] = useState(0);
 
-  // Check if user is logged in
+  // Check if user is logged in and load order item
   useEffect(() => {
-    if (!userId) {
-      alert("Please login first");
-      navigate("/login");
-    }
-  }, [userId, navigate]);
+    // Small delay to ensure localStorage is ready after navigation
+    const timer = setTimeout(() => {
+      const storedUserId = localStorage.getItem("userId");
+      setUserId(storedUserId);
+      
+      if (!storedUserId) {
+        alert("Please login first");
+        navigate("/login");
+        return;
+      }
 
-  // Load cart or direct order item from localStorage
-  useEffect(() => {
-    // First check if there's a direct order item (from Buy Now button)
-    const directOrderItem = localStorage.getItem("directOrderItem");
-    if (directOrderItem) {
+      // Load direct order item from localStorage (Buy Now button)
+      const directOrderItem = localStorage.getItem("directOrderItem");
+      
+      if (directOrderItem) {
+        try {
+          const item = JSON.parse(directOrderItem);
+          
+          // Validate item has required fields
+          if (item && item._id) {
+            setCartItems([item]);
+            setOrderType('direct'); // Mark as direct order
+            localStorage.removeItem("directOrderItem");
+          } else {
+            loadCart();
+          }
+        } catch (e) {
+          loadCart();
+        }
+      } else {
+        loadCart();
+      }
+      
+      setIsLoading(false);
+    }, 100);
+
+    return () => clearTimeout(timer);
+  }, [navigate]);
+
+  // Helper function to load cart
+  const loadCart = () => {
+    const savedCart = localStorage.getItem("userCart");
+    if (savedCart) {
       try {
-        const item = JSON.parse(directOrderItem);
-        setCartItems([item]);
-        // Clear the direct order item after loading
-        localStorage.removeItem("directOrderItem");
+        const parsedCart = JSON.parse(savedCart);
+        if (parsedCart.length > 0) {
+          setCartItems(parsedCart);
+          setOrderType('cart'); // Mark as cart order
+        }
       } catch (e) {
         setCartItems([]);
+        setOrderType(null);
       }
     } else {
-      // Fall back to cart items (from Add to Cart button)
-      const savedCart = localStorage.getItem("userCart");
-      if (savedCart) {
-        try {
-          setCartItems(JSON.parse(savedCart));
-        } catch (e) {
-          setCartItems([]);
-        }
-      }
+      setCartItems([]);
+      setOrderType(null);
     }
-  }, []);
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -112,13 +143,17 @@ const OrderPage = () => {
   };
 
   const calculateCartTotal = () => {
+    // Use savedTotal if cart is empty (order confirmation screen)
+    if (cartItems.length === 0 && savedTotal > 0) {
+      return savedTotal;
+    }
     return cartItems.reduce((total, item) => total + (item.price * (item.quantity || 1)), 0);
   };
 
   // Place order from cart items (Flipkart style)
   const handleOrderFromCart = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
+    setOrderLoading(true);
 
     try {
       setStep(2);
@@ -130,6 +165,10 @@ const OrderPage = () => {
         state: formData.state,
         pincode: formData.pincode
       };
+
+      // Calculate total BEFORE clearing cart
+      const totalAmount = cartItems.reduce((total, item) => total + (item.price * (item.quantity || 1)), 0);
+      setSavedTotal(totalAmount); // Save total for display
 
       // Create orders for each cart item
       const orderIds = [];
@@ -159,7 +198,7 @@ const OrderPage = () => {
         orderCount: orderIds.length,
         orderDate: new Date(),
         deliveryDate: getDeliveryDate(),
-        totalAmount: calculateCartTotal()
+        totalAmount: totalAmount
       });
 
       setMessage("Order placed successfully!");
@@ -170,7 +209,7 @@ const OrderPage = () => {
       setSuccess(false);
       setStep(3);
     } finally {
-      setIsLoading(false);
+      setOrderLoading(false);
     }
   };
 
@@ -186,7 +225,20 @@ const OrderPage = () => {
       paymentMethod: "cash"
     });
     setOrderDetails(null);
+    setSavedTotal(0);
   };
+
+  // Loading state while checking localStorage
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-slate-200 pt-16 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-100 via-slate-50 to-slate-200 pt-16">
@@ -197,8 +249,12 @@ const OrderPage = () => {
             <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-3xl shadow-lg shadow-yellow-400/30 mb-4">
               <FaShoppingCart className="text-4xl text-slate-900" />
             </div>
-            <h2 className="text-4xl font-bold text-slate-800">Place Order</h2>
-            <p className="text-slate-500 mt-2">Complete your order with delivery details</p>
+            <h2 className="text-4xl font-bold text-slate-800">
+              {orderType === 'direct' ? 'Quick Order' : 'Place Order'}
+            </h2>
+            <p className="text-slate-500 mt-2">
+              {orderType === 'direct' ? ' Complete your quick purchase' : 'Complete your order with delivery details'}
+            </p>
           </div>
 
           {/* Progress Steps */}
@@ -274,7 +330,7 @@ const OrderPage = () => {
                         <div className="border-t border-yellow-200 pt-3 mt-3">
                           <div className="flex justify-between items-center">
                             <span className="text-slate-500">Total Amount:</span>
-                            <span className="text-xl font-bold text-slate-800">₹{calculateCartTotal().toLocaleString('en-IN')}</span>
+                            <span className="text-xl font-bold text-slate-800">₹{savedTotal.toLocaleString('en-IN')}</span>
                           </div>
                         </div>
                       </div>
@@ -328,7 +384,7 @@ const OrderPage = () => {
             ) : (
               // Order Form
               <form onSubmit={handleOrderFromCart} className="p-8">
-                {isLoading && step === 2 && (
+                {orderLoading && step === 2 && (
                   <div className="fixed inset-0 bg-black/20 flex items-center justify-center z-50">
                     <div className="bg-white rounded-2xl p-8 flex flex-col items-center shadow-2xl">
                       <div className="w-16 h-16 border-4 border-yellow-400 border-t-transparent rounded-full animate-spin mb-4"></div>
@@ -343,14 +399,15 @@ const OrderPage = () => {
                     {/* Product Card - Flipkart Style */}
                     <div className="border border-slate-200 rounded-2xl p-5">
                       <h3 className="font-bold text-slate-800 mb-4 flex items-center gap-2">
-                        <FaShoppingCart className="text-yellow-500" /> Product Details
+                        {orderType === 'direct' ? <FaBolt className="text-green-500" /> : <FaShoppingCart className="text-yellow-500" />} 
+                        {orderType === 'direct' ? 'Quick Buy Product' : 'Product Details'}
                       </h3>
                       
                       {/* If cart has items, show them directly */}
                       {cartItems.length > 0 ? (
                         <div className="space-y-3">
                           {cartItems.map((item, index) => (
-                            <div key={index} className="bg-slate-50 rounded-xl p-3 flex gap-3 border border-slate-200">
+                            <div key={index} className={`rounded-xl p-3 flex gap-3 ${orderType === 'direct' ? 'bg-green-50 border border-green-200' : 'bg-slate-50 border border-slate-200'}`}>
                               <div className="w-16 h-16 bg-slate-200 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
                                 {item.image ? (
                                   <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
@@ -365,41 +422,54 @@ const OrderPage = () => {
                                 </p>
                                 <div className="flex items-center justify-between mt-2">
                                   <p className="font-bold text-yellow-600 text-sm">₹{item.price?.toLocaleString('en-IN')}</p>
-                                  <div className="flex items-center gap-2">
-                                    <button
-                                      type="button"
-                                      onClick={() => handleQuantityChange(index, -1)}
-                                      className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center hover:bg-slate-300 transition-colors text-xs"
-                                    >
-                                      -
-                                    </button>
-                                    <span className="w-6 text-center font-bold text-xs">{item.quantity || 1}</span>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleQuantityChange(index, 1)}
-                                      className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center hover:bg-slate-300 transition-colors text-xs"
-                                    >
-                                      +
-                                    </button>
-                                  </div>
+                                  {orderType === 'cart' ? (
+                                    <div className="flex items-center gap-2">
+                                      <button
+                                        type="button"
+                                        onClick={() => handleQuantityChange(index, -1)}
+                                        className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center hover:bg-slate-300 transition-colors text-xs"
+                                      >
+                                        -
+                                      </button>
+                                      <span className="w-6 text-center font-bold text-xs">{item.quantity || 1}</span>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleQuantityChange(index, 1)}
+                                        className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center hover:bg-slate-300 transition-colors text-xs"
+                                      >
+                                        +
+                                      </button>
+                                    </div>
+                                  ) : (
+                                    <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">Qty: 1</span>
+                                  )}
                                 </div>
                               </div>
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveFromCart(index)}
-                                className="text-red-400 hover:text-red-600 transition-colors"
-                                title="Remove item"
-                              >
-                                ×
-                              </button>
+                              {orderType === 'cart' && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveFromCart(index)}
+                                  className="text-red-400 hover:text-red-600 transition-colors"
+                                  title="Remove item"
+                                >
+                                  ×
+                                </button>
+                              )}
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <div className="text-center py-8 text-slate-500">
-                          <FaShoppingCart className="text-4xl mx-auto mb-3 text-slate-300" />
-                          <p>Your cart is empty</p>
-                          <p className="text-sm">Add items from wishlist to order</p>
+                        <div className="text-center py-8">
+                          <FaExclamationTriangle className="text-4xl mx-auto mb-3 text-yellow-500" />
+                          <p className="text-slate-600 font-medium">Your cart is empty</p>
+                          <p className="text-sm text-slate-500">Click "Buy Now" on a product to purchase</p>
+                          <button 
+                            type="button"
+                            onClick={() => navigate("/tiles")}
+                            className="mt-4 px-4 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 transition-colors"
+                          >
+                            Browse Products
+                          </button>
                         </div>
                       )}
                     </div>
@@ -558,17 +628,17 @@ const OrderPage = () => {
                     {/* Submit Button */}
                     <button
                       type="submit"
-                      disabled={cartItems.length === 0 || !formData.street || !formData.city || !formData.pincode || isLoading}
+                      disabled={cartItems.length === 0 || !formData.street || !formData.city || !formData.pincode || orderLoading}
                       className="w-full py-4 bg-gradient-to-r from-yellow-400 to-yellow-500 text-slate-900 font-bold rounded-xl hover:scale-[1.02] transition-transform shadow-lg shadow-yellow-400/30 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center justify-center gap-2"
                     >
-                      {isLoading ? (
+                      {orderLoading ? (
                         <>
                           <div className="w-5 h-5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
                           Processing...
                         </>
                       ) : (
                         <>
-                          <FaTruck /> Place Order
+                          <FaTruck /> {orderType === 'direct' ? 'Buy Now' : 'Place Order'}
                         </>
                       )}
                     </button>

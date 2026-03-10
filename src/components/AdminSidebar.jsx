@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { FaTachometerAlt, FaTags, FaTh, FaShoppingCart, FaCommentAlt, FaSignOutAlt, FaTimes, FaBars, FaCog, FaUser, FaUserCircle } from "react-icons/fa";
+import { FaTachometerAlt, FaTags, FaTh, FaShoppingCart, FaCommentAlt, FaSignOutAlt, FaTimes, FaBars, FaCog, FaUserCircle } from "react-icons/fa";
 import API from "../services/api";
 
 const AdminSidebar = () => {

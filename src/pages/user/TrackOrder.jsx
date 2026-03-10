@@ -1,12 +1,15 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import API from "../../services/api";
-import { FaBox, FaTruck, FaCheckCircle, FaClock, FaShippingFast, FaMapMarkerAlt, FaHome, FaChevronDown, FaChevronUp, FaCalendarAlt, FaRegClock } from "react-icons/fa";
+import { FaBox, FaTruck, FaCheckCircle, FaClock, FaShippingFast, FaMapMarkerAlt, FaHome, FaChevronDown, FaChevronUp, FaCalendarAlt, FaRegClock, FaTimesCircle } from "react-icons/fa";
 
 const TrackOrder = () => {
+  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [expandedOrder, setExpandedOrder] = useState(null);
+  const [cancellingId, setCancellingId] = useState(null);
 
   // Helper function to get tile title safely
   const getTileTitle = (tile) => {
@@ -17,9 +20,12 @@ const TrackOrder = () => {
   };
 
   // Helper function to get tile price safely
-  const getTilePrice = (tile) => {
-    if (!tile) return 0;
-    if (typeof tile === 'object') return tile.price || 0;
+  const getTilePrice = (order) => {
+    if (order && order.totalAmount) {
+      return order.totalAmount;
+    }
+    if (!order || !order.tile) return 0;
+    if (typeof order.tile === 'object') return order.tile.price || 0;
     return 0;
   };
 
@@ -165,15 +171,41 @@ const TrackOrder = () => {
     return new Date(date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
-  const statusCounts = {
-    all: orders.length,
-    pending: orders.filter(o => o.status === "Pending").length,
-    shipped: orders.filter(o => o.status === "Shipped").length,
-    delivered: orders.filter(o => o.status === "Delivered").length
-  };
-
   const toggleOrderExpand = (orderId) => {
     setExpandedOrder(expandedOrder === orderId ? null : orderId);
+  };
+
+  // Check if order can be cancelled
+  const canCancelOrder = (status) => {
+    return status !== "Delivered" && status !== "Cancelled";
+  };
+
+  // Handle cancel order
+  const handleCancelOrder = async (orderId) => {
+    if (!window.confirm("Are you sure you want to cancel this order?")) {
+      return;
+    }
+
+    setCancellingId(orderId);
+    try {
+      const token = localStorage.getItem("mytoken");
+      const res = await API.put(`/order/cancel/${orderId}`, {}, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.data.success) {
+        setOrders(orders.map(order => 
+          order._id === orderId ? { ...order, status: "Cancelled" } : order
+        ));
+        alert("Order cancelled successfully!");
+      }
+    } catch (error) {
+      alert("Failed to cancel order. Please try again.");
+    } finally {
+      setCancellingId(null);
+    }
   };
 
   return (
@@ -209,8 +241,9 @@ const TrackOrder = () => {
               const locationUpdates = getLocationUpdates(order.status);
               const isExpanded = expandedOrder === order._id;
               const tileTitle = getTileTitle(order.tile);
-              const tilePrice = getTilePrice(order.tile);
+              const tilePrice = getTilePrice(order);
               const tileImage = getTileImage(order.tile);
+              const isCancellable = canCancelOrder(order.status);
               
               return (
                 <div
@@ -281,15 +314,29 @@ const TrackOrder = () => {
                         </div>
                       </div>
 
-                      {/* Action Button */}
+                      {/* Action Buttons */}
                       <div className="flex lg:flex-col gap-3 items-start">
                         <button 
                           onClick={() => toggleOrderExpand(order._id)}
                           className={`px-6 py-3 bg-gradient-to-r ${statusDetails.color} text-white rounded-xl font-semibold shadow-lg hover:scale-105 transition-all duration-300 flex items-center gap-2`}
                         >
                           {isExpanded ? <FaChevronUp /> : <FaChevronDown />}
-                          {isExpanded ? "Hide Details" : "Track Details"}
+                          {isExpanded ? "Hide" : "Track"}
                         </button>
+                        {isCancellable && (
+                          <button 
+                            onClick={() => handleCancelOrder(order._id)}
+                            disabled={cancellingId === order._id}
+                            className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-semibold shadow-lg hover:scale-105 transition-all duration-300 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {cancellingId === order._id ? (
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                              <FaTimesCircle />
+                            )}
+                            Cancel
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
