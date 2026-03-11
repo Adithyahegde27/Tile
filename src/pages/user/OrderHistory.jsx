@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import API from "../../services/api";
+import API, { fixImageUrl } from "../../services/api";
 import { 
   FaBox, FaRupeeSign, FaCalendarAlt, FaMapMarkerAlt, FaEye, 
   FaCheckCircle, FaClock, FaTruck, FaShippingFast, FaShoppingCart, 
@@ -124,7 +124,7 @@ const OrderHistory = () => {
 
   const getTileImage = (tile) => {
     if (tile && typeof tile === 'object' && tile.image) {
-      return tile.image;
+      return fixImageUrl(tile.image);
     }
     return null;
   };

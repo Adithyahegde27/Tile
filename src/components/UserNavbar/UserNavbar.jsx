@@ -328,7 +328,7 @@ const UserNavbar = () => {
               <button className="flex items-center gap-2 px-2 py-1.5 lg:px-3 lg:py-2 bg-gray-100 hover:bg-yellow-100 rounded-full transition-all duration-300 group-hover:shadow-md">
                 {userProfilePhoto ? (
                   <img 
-                    src={userProfilePhoto} 
+                    src={userProfilePhoto.startsWith("http") ? userProfilePhoto : `http://localhost:5000${userProfilePhoto}`}
                     alt="Profile" 
                     className="w-8 h-8 lg:w-9 lg:h-9 rounded-full object-cover ring-2 ring-yellow-400/50 group-hover:ring-yellow-500 transition-all duration-300"
                   />

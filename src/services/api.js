@@ -5,7 +5,7 @@ const API = axios.create({
 });
 
 // Helper to fix image URLs
-const fixImageUrl = (imageUrl) => {
+export const fixImageUrl = (imageUrl) => {
   if (!imageUrl) return "https://via.placeholder.com/400?text=No+Image";
   if (imageUrl.startsWith("http")) return imageUrl;
   if (imageUrl.startsWith("/uploads")) {

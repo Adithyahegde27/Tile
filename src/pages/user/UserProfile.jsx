@@ -6,7 +6,7 @@ import {
   FaUser, FaEnvelope, FaPhone, FaLock, FaEye, FaEyeSlash, FaSave, FaTimes, 
   FaUserCircle, FaEdit, FaKey, FaCamera, FaUpload, FaShoppingCart, 
   FaHeart, FaMapMarkerAlt, FaBell, FaShieldAlt, FaCog, FaSignOutAlt,
-  FaCalendarAlt, FaBox
+  FaCalendarAlt, FaBox, FaCheck
 } from "react-icons/fa";
 
 // Animated Counter Component
@@ -75,6 +75,58 @@ const UserProfile = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState({ type: "", text: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef(null);
+
+  // Helper to fix image URLs
+  const fixImageUrl = (imageUrl) => {
+    if (!imageUrl) return null;
+    if (imageUrl.startsWith("http")) return imageUrl;
+    if (imageUrl.startsWith("/uploads")) {
+      return `http://localhost:5000${imageUrl}`;
+    }
+    return `http://localhost:5000/uploads/${imageUrl}`;
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current.click();
+  };
+
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    setMessage({ type: "", text: "" });
+
+    const formData = new FormData();
+    formData.append("profilePhoto", file);
+
+    try {
+      const token = localStorage.getItem("mytoken");
+      const userId = localStorage.getItem("userId");
+
+      const res = await API.post(`/auth/profile-photo/${userId}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.data) {
+        setUser({ ...user, userimage: res.data.profilePhoto });
+        localStorage.setItem("userProfilePhoto", res.data.profilePhoto);
+        setMessage({ type: "success", text: "Profile photo updated successfully!" });
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      setMessage({ type: "error", text: error.response?.data?.message || "Failed to upload photo" });
+    } finally {
+      setIsUploading(false);
+      e.target.value = "";
+    }
+  };
 
   useEffect(() => {
     setAnimated(true);
@@ -92,7 +144,7 @@ const UserProfile = () => {
         return;
       }
 
-      const res = await API.get(`/users/getUser/${userId}`, {
+      const res = await API.get(`/users/singleView/${userId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -245,16 +297,36 @@ const UserProfile = () => {
           <div className="flex flex-col md:flex-row items-center gap-6">
             {/* Avatar */}
             <div className="relative">
-              <div className="w-28 h-28 md:w-32 md:h-32 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border-4 border-white/30 shadow-2xl">
+              <div className="w-28 h-28 md:w-32 md:h-32 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border-4 border-white/30 shadow-2xl overflow-hidden">
                 {user?.userimage ? (
-                  <img src={user.userimage} alt="Profile" className="w-full h-full rounded-full object-cover" />
+                  <img 
+                    src={fixImageUrl(user.userimage) || user.userimage} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover" 
+                  />
                 ) : (
                   <FaUserCircle className="text-6xl text-white" />
                 )}
+                {isUploading && (
+                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                    <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                )}
               </div>
-              <button className="absolute bottom-0 right-0 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
+              <button 
+                onClick={triggerFileInput}
+                disabled={isUploading}
+                className="absolute bottom-0 right-0 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-transform disabled:opacity-50"
+              >
                 <FaCamera className="text-yellow-500" />
               </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoUpload}
+                className="hidden"
+              />
             </div>
             
             {/* User Info */}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import AdminLayout from "../../components/AdminLayout";
-import API from "../../services/api";
+import API, { fixImageUrl } from "../../services/api";
 import { Link } from "react-router-dom";
 import { 
   FaTags, FaTh, FaShoppingCart, FaCommentAlt, FaUsers, FaRupeeSign, 
@@ -483,7 +483,7 @@ const AdminDashboard = () => {
                   <div className="flex items-center gap-4">
                     <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 relative">
                       <img 
-                        src={order.tile?.image || "https://via.placeholder.com/56"} 
+                        src={order.tile?.image ? fixImageUrl(order.tile.image) : "https://via.placeholder.com/56"} 
                         alt="Tile" 
                         className="w-full h-full object-cover group-hover:scale-125 transition-transform duration-500"
                       ></img>

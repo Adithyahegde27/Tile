@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import API from "../../services/api";
+import API, { fixImageUrl } from "../../services/api";
 import { 
   FaBox, FaRupeeSign, FaCalendarAlt, FaMapMarkerAlt, FaEye,
   FaClock, FaCheck, FaTruck, FaTimesCircle, FaChevronDown, 
@@ -159,7 +159,7 @@ const TrackOrder = () => {
 
   const getTileTitle = (tile) => tile?.title || "Unknown Tile";
   const getTilePrice = (order) => order?.totalAmount || order?.tile?.price || 0;
-  const getTileImage = (tile) => tile?.image || null;
+  const getTileImage = (tile) => tile?.image ? fixImageUrl(tile.image) : null;
 
   const statusFilters = [
     { value: "all", label: "All Orders" },

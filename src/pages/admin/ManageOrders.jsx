@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import AdminLayout from "../../components/AdminLayout";
-import API from "../../services/api";
+import API, { fixImageUrl } from "../../services/api";
 import { FaShoppingCart, FaTruck, FaCheckCircle, FaClock, FaBox, FaSearch, FaFilter, FaShippingFast, FaCheck, FaTimes, FaEnvelope, FaMapMarkerAlt, FaPhone, FaExternalLinkAlt, FaUndo } from "react-icons/fa";
 
 const ManageOrders = () => {
@@ -190,7 +190,7 @@ const ManageOrders = () => {
                         <div className="flex items-center gap-5">
                           <div className="relative group">
                             <img 
-                              src={order.tile?.image || ""} 
+                              src={order.tile?.image ? fixImageUrl(order.tile.image) : ""} 
                               alt={order.tile?.title || "Tile"} 
                               className="w-24 h-24 object-cover rounded-2xl shadow-lg group-hover:scale-110 transition-transform duration-500"
                             />
@@ -322,7 +322,11 @@ const ManageOrders = () => {
                             <div className="space-y-2 text-sm">
                               <p className="text-slate-600"><span className="font-medium">Status:</span> {order.status}</p>
                               <p className="text-slate-600"><span className="font-medium">Ordered:</span> {new Date(order.createdAt || order.date || Date.now()).toLocaleDateString()}</p>
-                              <p className="text-slate-600"><span className="font-medium">Address:</span> {order.shippingAddress || "Not provided"}</p>
+                              <p className="text-slate-600">
+                                <span className="font-medium">Address:</span><br />
+                                {order.address?.street || "N/A"},<br />
+                                {order.address?.city || "N/A"}, {order.address?.state || "N/A"} - {order.address?.pincode || "N/A"}
+                              </p>
                             </div>
                           </div>
                         </div>
