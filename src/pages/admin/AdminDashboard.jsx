@@ -136,11 +136,11 @@ const AdminDashboard = () => {
       const pending = orders.filter(o => o.status === "Pending").length;
       const shipped = orders.filter(o => o.status === "Shipped").length;
       const delivered = orders.filter(o => o.status === "Delivered").length;
-      const revenue = orders.filter(o => o.status === "Delivered").reduce((sum, o) => sum + (parseFloat(o.tile?.price) || 0), 0);
+const revenue = orders.filter(o => o.status === "Delivered").reduce((sum, o) => sum + parseFloat(o.totalAmount || (o.tile?.price * (o.quantity || 1)) || 0), 0);
       
       // Today's orders
       const today = new Date().toDateString();
-      const todayOrders = orders.filter(o => new Date(o.createdAt).toDateString() === today).length;
+      const todayOrders = orders.filter(o => new Date(o.orderDate || o.createdAt).toDateString() === today).length;
       
       // Pending payments (orders that are not delivered but have payment pending)
       const pendingPayments = orders.filter(o => o.status !== "Delivered" && o.status !== "Cancelled").length;
@@ -171,7 +171,7 @@ const AdminDashboard = () => {
         color: order.status === "Delivered" ? "bg-green-500" : 
                order.status === "Shipped" ? "bg-blue-500" : "bg-yellow-500",
         text: `Order ${order.status.toLowerCase()} for ${order.tile?.title || "Unknown"}`,
-        time: new Date(order.createdAt).toLocaleTimeString()
+        time: new Date(order.orderDate || order.createdAt).toLocaleTimeString()
       }));
       setActivities(recentActivities);
       
@@ -493,10 +493,10 @@ const AdminDashboard = () => {
                         {order.tile?.title || "Unknown"}
                       </p>
                       <p className="text-slate-500 text-sm truncate">{order.user?.email || "Unknown"}</p>
-                      <p className="text-slate-400 text-xs">{new Date(order.createdAt).toLocaleDateString()}</p>
+                      <p className="text-slate-400 text-xs">{new Date(order.orderDate || order.createdAt).toLocaleDateString()}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-slate-800">₹{order.tile?.price || 0}</p>
+                      <p className="font-bold text-slate-800">₹{order.totalAmount || (order.tile?.price * (order.quantity || 1)) || 0}</p>
                       <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${getStatusColor(order.status)}`}>
                         {getStatusIcon(order.status)} 
                         <span className="text-[10px]">{order.status}</span>

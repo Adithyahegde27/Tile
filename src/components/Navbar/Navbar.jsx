@@ -17,13 +17,8 @@ const Menu = [
     name: "About Us",
     link: "/about",
   },
-  {
-    id: 3,
-    name: "Top Rated",
-    link: "/#",
-  },
 {
-    id: 4,
+    id: 3,
     name: "Contact us",
     link: "/contact",
   },

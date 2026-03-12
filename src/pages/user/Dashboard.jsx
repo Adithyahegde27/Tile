@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import API from "../../services/api";
+import API, { fixImageUrl } from "../../services/api";
 import { 
   FaUsers, FaTags, FaShoppingCart, FaMapMarkerAlt, FaCommentAlt, 
   FaChartLine, FaTrophy, FaStar, FaClock, FaThLarge, FaArrowRight, 
@@ -152,9 +152,9 @@ const Dashboard = () => {
       const cancelledOrders = orders.filter(o => o.status === "Cancelled").length;
       
       // Calculate total spent
-      const totalSpent = orders
+const totalSpent = orders
         .filter(o => o.status === "Delivered" || o.status === "Completed")
-        .reduce((sum, o) => sum + (parseFloat(o.tile?.price) || 0), 0);
+        .reduce((sum, o) => sum + parseFloat(o.totalAmount || (o.tile?.price * (o.quantity || 1)) || 0), 0);
 
       // Fetch all feedback count
       const feedbackRes = await API.get("/feedback/all");
@@ -187,8 +187,8 @@ const Dashboard = () => {
         color: order.status === "Delivered" ? "bg-green-500" : 
                order.status === "Shipped" ? "bg-blue-500" : 
                order.status === "Cancelled" ? "bg-red-500" : "bg-yellow-500",
-        text: `Order ${order.status?.toLowerCase() || "pending"} - ${order.tile?.title || "Unknown Item"}`,
-        time: new Date(order.createdAt).toLocaleTimeString()
+        text: `Order ${order.status?.toLowerCase() || "pending"} - ${order.tile?.title || "Item"}`,
+        time: new Date(order.createdAt || order.orderDate).toLocaleTimeString()
       }));
       setActivities(recentActivities);
 
@@ -247,9 +247,8 @@ const Dashboard = () => {
   };
 
   const getTimeAgo = (date) => {
-    if (!date) return "Unknown";
+    const orderDate = date ? new Date(date) : new Date();
     const now = new Date();
-    const orderDate = new Date(date);
     const diffMs = now - orderDate;
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
@@ -438,7 +437,7 @@ const Dashboard = () => {
                     <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 dark:bg-slate-700 relative">
                       {order.tile?.image ? (
                         <img 
-                          src={order.tile.image} 
+                          src={fixImageUrl(order.tile?.image)} 
                           alt={order.tile?.title || "Tile"} 
                           className="w-full h-full object-cover group-hover:scale-125 transition-transform duration-500"
                         />
@@ -450,13 +449,13 @@ const Dashboard = () => {
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-slate-800 dark:text-white truncate group-hover:text-yellow-600 transition-colors">
-                        {order.tile?.title || "Unknown Item"}
+                        {order.tile?.title || "Tile"}
                       </p>
                       <p className="text-slate-500 dark:text-slate-400 text-sm">Order #{order._id?.slice(-6)}</p>
-                      <p className="text-slate-400 dark:text-slate-500 text-xs">{getTimeAgo(order.createdAt)}</p>
+                      <p className="text-slate-400 dark:text-slate-500 text-xs">{getTimeAgo(order.createdAt || order.orderDate)}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-bold text-slate-800 dark:text-white">₹{order.tile?.price || 0}</p>
+                      <p className="font-bold text-slate-800 dark:text-white">₹{order.totalAmount || (order.tile?.price * (order.quantity || 1)) || 0}</p>
                       <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs ${getStatusColor(order.status)}`}>
                         {getStatusIcon(order.status)} 
                         <span className="text-[10px]">{order.status}</span>

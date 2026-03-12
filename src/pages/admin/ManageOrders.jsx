@@ -208,10 +208,10 @@ const ManageOrders = () => {
                             </div>
                             <div className="flex items-center gap-4">
                               <span className="text-2xl font-bold bg-gradient-to-r from-cyan-600 to-indigo-600 bg-clip-text text-transparent">
-                                ₹ {order.tile?.price || 0}
+                                ₹ {order.totalAmount || (order.tile?.price * (order.quantity || 1)) || 0}
                               </span>
                               <span className="text-slate-400 text-sm">
-                                {new Date(order.createdAt || order.date || Date.now()).toLocaleDateString('en-US', { 
+                                {new Date(order.orderDate || order.createdAt || order.date || Date.now()).toLocaleDateString('en-US', { 
                                   year: 'numeric', 
                                   month: 'short', 
                                   day: 'numeric',
@@ -310,7 +310,7 @@ const ManageOrders = () => {
                               <p className="text-slate-600"><span className="font-medium">Order ID:</span> #{order._id?.substring(0, 8) || "N/A"}</p>
                               <p className="text-slate-600"><span className="font-medium">Tile:</span> {order.tile?.title || "N/A"}</p>
                               <p className="text-slate-600"><span className="font-medium">Category:</span> {order.tile?.category?.name || "N/A"}</p>
-                              <p className="text-slate-600"><span className="font-medium">Price:</span> ₹ {order.tile?.price || 0}</p>
+                              <p className="text-slate-600"><span className="font-medium">Total:</span> ₹ {order.totalAmount || (order.tile?.price * (order.quantity || 1)) || 0} (Qty: {order.quantity || 1})</p>
                             </div>
                           </div>
 
@@ -321,7 +321,7 @@ const ManageOrders = () => {
                             </h4>
                             <div className="space-y-2 text-sm">
                               <p className="text-slate-600"><span className="font-medium">Status:</span> {order.status}</p>
-                              <p className="text-slate-600"><span className="font-medium">Ordered:</span> {new Date(order.createdAt || order.date || Date.now()).toLocaleDateString()}</p>
+                              <p className="text-slate-600"><span className="font-medium">Ordered:</span> {new Date(order.orderDate || order.createdAt || order.date || Date.now()).toLocaleDateString()}</p>
                               <p className="text-slate-600">
                                 <span className="font-medium">Address:</span><br />
                                 {order.address?.street || "N/A"},<br />
