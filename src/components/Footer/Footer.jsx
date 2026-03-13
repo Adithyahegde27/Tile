@@ -62,24 +62,6 @@ const PublicFooter = () => {
               </div>
             </div>
           </div>
-
-          {/* Newsletter */}
-          <div className="py-4">
-            <h1 className="text-xl font-bold mb-4">Newsletter</h1>
-            <p className="text-gray-400 text-sm mb-4">
-              Subscribe to get special offers and updates.
-            </p>
-            <div className="flex">
-              <input 
-                type="email" 
-                placeholder="Enter your email" 
-                className="bg-gray-800 text-white px-4 py-2 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-purple-500 w-full"
-              />
-              <button className="bg-purple-600 px-4 py-2 rounded-r-lg hover:bg-purple-700 duration-300">
-                Subscribe
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Copyright */}
