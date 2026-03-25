@@ -41,6 +41,7 @@ const ManageOrders = () => {
   const filteredOrders = orders.filter(order => {
     const matchesFilter = filter === "all" || order.status === filter;
     const matchesSearch = !searchTerm || 
+      order._id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.user?.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       order.tile?.title?.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesFilter && matchesSearch;
