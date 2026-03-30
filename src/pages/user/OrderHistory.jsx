@@ -5,8 +5,9 @@ import API, { fixImageUrl } from "../../services/api";
 import { 
   FaBox, FaRupeeSign, FaCalendarAlt, FaMapMarkerAlt, FaEye, 
   FaCheckCircle, FaClock, FaTruck, FaShippingFast, FaShoppingCart, 
-  FaTimesCircle, FaArrowRight, FaFilter, FaTimes
+  FaTimesCircle, FaArrowRight, FaFilter, FaTimes, FaCommentAlt
 } from "react-icons/fa";
+import FeedbackModal from "../../components/FeedbackModal";
 
 const OrderHistory = () => {
   const navigate = useNavigate();
@@ -15,7 +16,9 @@ const OrderHistory = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [filter, setFilter] = useState("all");
   const [animated, setAnimated] = useState(false);
-  const userId = localStorage.getItem("userId");
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [selectedFeedbackOrder, setSelectedFeedbackOrder] = useState(null);
+  const userId = localStorage.getItem("userId"); 
 
   useEffect(() => {
     setAnimated(true);
@@ -374,8 +377,39 @@ const OrderHistory = () => {
                                 <FaTimesCircle /> Cancel Order
                               </button>
                             )}
+                            {order.status === "Delivered" && (
+                              <button
+                                onClick={() => {
+                                  setSelectedFeedbackOrder(order);
+                                  setFeedbackModalOpen(true);
+                                }}
+                                className="w-full mt-3 px-4 py-2.5 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-xl font-semibold text-sm transition-all duration-300 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl hover:scale-[1.02]"
+                              >
+                                <FaCommentAlt /> Give Feedback
+                              </button>
+                            )}
+
                           </div>
                         </div>
+
+                        {/* Feedback Modal */}
+                        {feedbackModalOpen && selectedFeedbackOrder && (
+                          <FeedbackModal
+                            isOpen={feedbackModalOpen}
+                            onClose={() => {
+                              setFeedbackModalOpen(false);
+                              setSelectedFeedbackOrder(null);
+                              fetchOrders(); // Refresh to check has Feedback if backend supports
+                            }}
+                            orderId={selectedFeedbackOrder._id}
+                            userId={userId}
+                            onSuccess={() => {
+                              setFeedbackModalOpen(false);
+                              setSelectedFeedbackOrder(null);
+                              fetchOrders();
+                            }}
+                          />
+                        )}
                       </div>
                     </div>
                   )}

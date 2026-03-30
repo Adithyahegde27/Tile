@@ -5,8 +5,9 @@ import API, { fixImageUrl } from "../../services/api";
 import { 
   FaBox, FaRupeeSign, FaCalendarAlt, FaMapMarkerAlt, FaEye,
   FaClock, FaCheck, FaTruck, FaTimesCircle, FaChevronDown, 
-  FaChevronUp, FaSearch, FaFilter, FaBell, FaExclamationCircle
+  FaChevronUp, FaSearch, FaFilter, FaBell, FaExclamationCircle, FaCommentAlt
 } from "react-icons/fa";
+
 
 // Animated Counter Component
 const AnimatedCounter = ({ end, duration = 1500 }) => {
@@ -58,6 +59,7 @@ const TrackOrder = () => {
   const [cancellingId, setCancellingId] = useState(null);
   const [animated, setAnimated] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const userId = localStorage.getItem("userId"); 
 
   useEffect(() => {
     setAnimated(true);
@@ -411,7 +413,7 @@ const TrackOrder = () => {
                                       {step.id === 1 && "Order has been placed"}
                                       {step.id === 2 && order.status === "Shipped" && "Your order is on the way"}
                                       {step.id === 3 && order.status === "Delivered" && "Order delivered successfully"}
-                                      {step.id < trackingSteps.filter(s => s.active).length + 1 && step.id !== trackingSteps.filter(s => s.active).length + 1 && "Completed"}
+                                      {step.id < trackingSteps.filter(s => s.active).length + 1 && step.id !== trackingSteps.filter(s => s.active).length}
                                     </p>
                                   </div>
                                 </div>
@@ -446,7 +448,7 @@ const TrackOrder = () => {
                             </div>
                           </div>
 
-                          {order.status === "Pending" && (
+                           {order.status === "Pending" && (
                             <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-2xl">
                               <div className="flex items-start gap-3">
                                 <FaExclamationCircle className="text-yellow-500 mt-1" />

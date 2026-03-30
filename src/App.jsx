@@ -19,7 +19,6 @@ import Login from "./pages/user/Login";
 import Dashboard from "./pages/user/Dashboard";
 import ViewCategory from "./pages/user/ViewCategory";
 import ViewTile from "./pages/user/ViewTile";
-import Feedback from "./pages/user/Feedback";
 import OrderPage from "./pages/user/OrderPage";
 import TrackOrder from "./pages/user/TrackOrder";
 import UserProfile from "./pages/user/UserProfile";
@@ -111,7 +110,6 @@ function App() {
             <Route path="/track" element={<TrackOrder />} />
             <Route path="/myorders" element={<UserProtectedRoute><OrderHistory /></UserProtectedRoute>} />
             <Route path="/wishlist" element={<UserProtectedRoute><Wishlist /></UserProtectedRoute>} />
-            <Route path="/feedback" element={<Feedback />} />
             <Route path="/profile" element={<UserProtectedRoute><UserProfile /></UserProtectedRoute>} />
           </Route>
 

@@ -216,7 +216,7 @@ const totalSpent = orders
     { title: "My Orders", icon: <FaShoppingCart />, link: "/myorders", color: "from-blue-500 to-blue-600", shadow: "shadow-blue-500/30" },
     { title: "Track Orders", icon: <FaMapMarkerAlt />, link: "/track", color: "from-purple-500 to-purple-600", shadow: "shadow-purple-500/30" },
     { title: "Wishlist", icon: <FaHeart />, link: "/wishlist", color: "from-pink-500 to-pink-600", shadow: "shadow-pink-500/30" },
-    { title: "Give Feedback", icon: <FaCommentAlt />, link: "/feedback", color: "from-green-500 to-green-600", shadow: "shadow-green-500/30" },
+    { title: "Give Feedback", icon: <FaCommentAlt />, link: "/myorders", color: "from-green-500 to-green-600", shadow: "shadow-green-500/30" },
     { title: "My Profile", icon: <FaUsers />, link: "/profile", color: "from-cyan-500 to-cyan-600", shadow: "shadow-cyan-500/30" },
   ];
 

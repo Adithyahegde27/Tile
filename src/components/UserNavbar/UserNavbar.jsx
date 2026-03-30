@@ -353,7 +353,6 @@ const UserNavbar = () => {
                       { path: '/profile', icon: FaUser, label: 'My Profile' },
                       { path: '/wishlist', icon: FaHeart, label: 'My Wishlist' },
                       { path: '/myorders', icon: FaHistory, label: 'My Orders' },
-                      { path: '/feedback', icon: FaCommentAlt, label: 'Give Feedback' },
                     ].map((item) => (
                       <Link 
                         key={item.path}
@@ -430,7 +429,7 @@ const UserNavbar = () => {
             { path: '/order', label: 'Order', icon: <FaShoppingCart /> },
             { path: '/track', label: 'Track', icon: <FaTruck /> },
             { path: '/wishlist', label: 'Wishlist', icon: <FaHeart /> },
-            { path: '/feedback', label: 'Feedback', icon: <FaCommentAlt /> },
+            { path: '/myorders', label: 'Orders', icon: <FaHistory /> },
           ].map((item) => (
             <Link 
               key={item.path}

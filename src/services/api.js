@@ -26,4 +26,7 @@ API.interceptors.response.use((response) => {
   return response;
 });
 
+// Convenience method for feedback with order context
+API.feedbackWithOrder = (orderId, data) => API.post('/feedback/add', { ...data, order: orderId });
+
 export default API;
